@@ -15,7 +15,7 @@
 
 # Introduction
 
-The goal of this lab is to introduce you to `python3`-–the primary language of this class-–by implementing a simple, unoptimized forward chaining algorithm to solve a propositional logic problem. Specifically, we will use artificial intelligence to solve the duck test (with some additional rules thrown in):
+The goal of this lab is to introduce you to `python3`-–the primary language of this class-–by implementing a simple, unoptimized forward chaining algorithm to solve a propositional logic problem. Specifically, we will use artificial intelligence to solve the duck test:
 
 ```
 Looks ∩ Swims ∩ Quacks => Duck,
@@ -26,7 +26,30 @@ Swims,
 Quacks.
 ```
 
-If  it  looks  like  a  duck,  swims  like  a  duck,  and  quacks  like  a  duck,  then  it  probably  is  aduck..  The subclauses/facts at the end support the conclusion that it is, in fact, a duck (seeFigure 1).  There are a few more rules thrown in there:  if it barks its a dog, if it hoots andflies it’s an owl.  Indeed, by the powers of our logical deduction:Looks∩Swims∩Quacks  =⇒Duck,Looks,Swims,Quacks|= Duck(1)Figure 1:  An actual advice mallard, depicted here swimming like a duck, looking like a duck,and quacking like a duck.3.1    Forward ChainingForward chaining (FC) is an algorithm for inference that iterates exhaustively over each rulein  the  KB  attempting  to  entail  new  sentences  with  modus  ponens.   The  algorithm  stopswhen no new knowledge can be generated.  It is generally described as:dofor each ruleif antecedent is satisfied and consequent is not in the KBinsert consequent into KBendifendforwhile something new inserted in KBNote that this is pseudocode notpython3.If we apply this to the duck test:Iteration 1Iterating over the KB:Looks∩Swims∩Quacks  =⇒Duck,Looks,Swims,Quacks|= DuckBarks  =⇒Dog,¬Barks6|= DogHoots∩Flies  =⇒Owl,¬Hoots,¬Flies6|= Owl2
+If it looks like a duck, swims like a duck, and quacks like a duck, then it probably is a duck. The subclauses/facts at the end support the conclusion that it is, in fact, a duck. There are a few more rules thrown in there: if it barks its a dog, if it hoots and flies it’s an owl. Indeed, by the powers of our logical deduction: 
+
+```
+Looks ∩ Swims ∩ Quacks => Duck, Looks, Swims, Quacks |= Duck
+```
+
+This is something we can tell at a glance. But, the goal of the lab is to have a computer automatically come to this conclusion.
+
+## Forward Chaining
+
+Forward chaining (FC) is an algorithm for inference that iterates exhaustively over each rule in the KB attempting to entail new sentences with modus ponens. The algorithm stops when no new knowledge can be generated. It is generally described as:
+
+```
+do
+  for each rule
+    if antecedent is satisfied 
+    and consequent is not in the KB
+      insert consequent into KB
+    endif
+  endfor
+while something new inserted in KB
+```
+
+Note that this is pseudo-code not `python3`. If we apply this to the duck test:Iteration 1Iterating over the KB:Looks∩Swims∩Quacks  =⇒Duck,Looks,Swims,Quacks|= DuckBarks  =⇒Dog,¬Barks6|= DogHoots∩Flies  =⇒Owl,¬Hoots,¬Flies6|= Owl2
 Duck was inserted to the KB. However, FC is goal less so inference will continue until nonew knowledge can be generated.Iteration 2Iterating over the KB:Barks  =⇒Dog,¬Barks6|= DogHoots∩Flies  =⇒Owl,¬Hoots,¬Flies6|= OwlThe first rule was omitted because the consequent was already inserted into the KB. Noth-ing.  So we terminate.  The goal was inserted into the KB in iteration 1,  so it is entailed.Next, we will briefly cover the language we will use to implement this algorithm.3.2    Python 3It is overkill to use AI in this scenario, so the goal of this lab is really to introduce you topython3and some if its constructs.python3is the CLI command for Python 3.  It is a high-level  general-purpose  scripting  language.   Its  recommended  that  you  use  this  language  sothat the concepts of memory management, types and arrays are abstracted out of your codeso you can focus on the theory of the algorithms.  If you’re using a departmental machine itmost likely haspython3installed.  You can check the version with:$ python3 -VPython 3.6.4Note  that  we’re  usingpython3and  notpython,  they  are  two  different  things!Youroutput may vary based on the version of Python 3 you have installed.  The general workflowfor Python is to:1.  Code your lab in a text editor, e.g.code.py2.  Your code is a script.  Python will execute the script with the following command:$ python3 code.pyThis command will tell Python to execute your script line-by-line and close after exe-cution.Optional:  Hello World!Open your favorite text editor.  I prefervim:$ vim hello.pyand enter:3
 print("I’m working!")Save it ashello.pyand close the editor.  If usingvim, this is:wq.  Make sure your CLI pathis in the same directory as the file you just created.  In the CLI enter:$ python3 hello.pyI’m working!Figure 2:  Hi working, I’m dad.Sidebar:  Python CLIConventionally  you  can  just  launchpython3and  type  commands  one-by-one.   But,  thealgorithms we will implement are generally large enough for this to be impractical.  Hence, Irecommend the text editor approach described above.  Suppose you want to keep the PythonCLI open after executing your script add a-iflag:$ python3 -i code.pyThis is useful if you want to check on the value of variables after a script is complete, sayfor debugging purposes.Sidebar:  Major Concepts of PythonThe following sums up the major concepts of Python:•Python is an interpretted language•Whitespace (tabs) specify blocks, not curly braces•Dynamic typing, variables do not need to be declared or assigned a type before firstuseAt the conclusion of this lab you will have a rudimentary understanding of Python whichis sufficient to complete the labs in this course.4
 4    ApproachFor this lab you are given thepython3code.  We will study it line-by-line.  Copy the followingalgorithm inpython3:KB = ["looks","swims","quacks"]rules = [(["looks","swims","quacks"],"duck"),(["barks"],"dog"),(["hoots","flies"],"owl")]count = 1 # Number of times we have iterated over the whole rule setchanges = Truewhile changes:changes = False # Set the flag that there have been no changes to falseprint( "Starting iteration " + str(count) )for p in rules: # For each rule in the set of rules ...antecedent, consequent = pprint( "Consider a rule where: " )print( antecedent )print( "implies: " )print( consequent )# Determine if all literals in antecedent are also in KBanteInKB = True # Flag for the antecedent in the KBfor q in antecedent:# q will be a string# KB is a list of stringsif q not in KB:anteInKB = False # Flag as false, all clauses must be implied# If it passes the above, then antecedent is satisfied# ...and consequent should be entailedif anteInKB and consequent not in KB:KB.append( consequent )changes = Trueprint( "Antecedent is in KB, consequent is implied, KB is now: " )print(KB)elif anteInKB and consequent in KB:print( "Consequent is implied, but was already in KB")else:print( "Consequent is not implied" )5
