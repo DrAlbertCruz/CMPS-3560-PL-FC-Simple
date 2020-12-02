@@ -86,8 +86,8 @@ It is overkill to use AI in this scenario, so the goal of this lab is really to 
 *** CentOS or RHEL: `yum update -y` then `yum install -y python3`
 * If you have Windows:
 ** Run it within Windows. Install Python 3 (Google this) and you can now run `python3` in a terminal of your choice, use the PowerShell terminal for Python 3
-** Install Windows Subsystem for Linux and follow the instructions for Linux
-** Install Cygwin, and select the Python 3 package during installation, use the Cygwin terminal for Python 3
+** Install Windows Subsystem for Linux and follow the instructions for Linux. This step runs an emulated Linux on top of your Windows.
+** Install Cygwin, and select the Python 3 package during installation, use the Cygwin terminal for Python 3. This step runs a simulated Linux terminal on top of your Windows--it is not Linux it only appears to be Linux.
 * If you have Mac:
 ** Install Python 3 for Mac (Google this), and then use the terminal for Python 3
 
